@@ -1,6 +1,11 @@
 import { getDiff } from "json-difference";
+import safeJsonValue from "safe-json-value";
 
 import Logger from "./logger.js";
+
+function copy(obj) {
+  return safeJsonValue(obj).value;
+}
 
 function callHandler({ logger }) {
   return {
@@ -51,9 +56,9 @@ function setHandler({ logger, state }) {
   return {
     set(target, propKey, value, receiver) {
       if (state.shouldLogSet) {
-        let originalState = JSON.parse(JSON.stringify(target));
+        let originalState = copy(receiver);
         let result = Reflect.set(target, propKey, value, receiver);
-        let newState = JSON.parse(JSON.stringify(target));
+        let newState = copy(receiver);
         logger.mutation({
           propKey,
           args: value,
@@ -79,7 +84,7 @@ function functionHandler({ logger, state }) {
       const targetValue = Reflect.get(target, propKey, receiver);
       if (typeof targetValue === "function") {
         return function (...args) {
-          let originalState = JSON.parse(JSON.stringify(target));
+          let originalState = copy(receiver);
           let error;
           try {
             return pauseLogSet(() => targetValue.apply(this, args), state);
@@ -87,7 +92,7 @@ function functionHandler({ logger, state }) {
             error = err;
             throw err;
           } finally {
-            let newState = JSON.parse(JSON.stringify(target));
+            let newState = copy(receiver);
             logger.mutation({
               propKey,
               args,

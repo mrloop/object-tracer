@@ -152,5 +152,29 @@ module("printMutations", function () {
         },
       ]);
     });
+
+    test("cyclic references", function (assert) {
+      let dogA = printMutations(new Dog(), { logger: this.logger });
+      let dogB = new Dog();
+      dogA.friends = [dogB];
+      dogB.friends = [dogA];
+
+      let bark = dogA.bark();
+
+      assert.strictEqual(bark, "yap!", "result returned");
+
+      assert.deepEqual(this.logger.calls[1], {
+        mutation: {
+          propKey: "bark",
+          klass: Dog,
+          args: [],
+          diff: {
+            added: [],
+            removed: [],
+            edited: [["totalBarks", 0, 1]],
+          },
+        },
+      });
+    });
   });
 });
