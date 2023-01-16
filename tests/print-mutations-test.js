@@ -136,7 +136,21 @@ module("printMutations", function () {
     test("function invocation cause error", function (assert) {
       let err = new DogError("dog");
       assert.throws(() => this.dog.error(err), DogError);
-      assert.deepEqual(this.logger.calls, []);
+      assert.deepEqual(this.logger.calls, [
+        {
+          mutation: {
+            propKey: "error",
+            klass: Dog,
+            args: [err],
+            error: err,
+            diff: {
+              added: [],
+              removed: [],
+              edited: [["hasError", false, true]],
+            },
+          },
+        },
+      ]);
     });
   });
 });

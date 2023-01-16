@@ -4,6 +4,7 @@ export class Animal {
 
 export class Dog extends Animal {
   totalBarks = 0;
+  hasError = false;
 
   sleep() {}
 
@@ -13,6 +14,7 @@ export class Dog extends Animal {
   }
 
   error(error) {
+    this.hasError = true;
     throw error;
   }
 }

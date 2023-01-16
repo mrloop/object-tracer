@@ -8,13 +8,22 @@ function callHandler({ logger }) {
       const targetValue = Reflect.get(target, propKey, receiver);
       if (typeof targetValue === "function") {
         return function (...args) {
+          let error;
+          let result;
           try {
-            let result = targetValue.apply(this, args);
-            logger.call({ propKey, args, klass: target.constructor, result });
+            result = targetValue.apply(this, args);
             return result;
-          } catch (error) {
-            logger.call({ propKey, args, klass: target.constructor, error });
-            throw error;
+          } catch (err) {
+            error = err;
+            throw err;
+          } finally {
+            logger.call({
+              propKey,
+              args,
+              klass: target.constructor,
+              ...(error && { error }),
+              ...(!error && { result }),
+            });
           }
         };
       } else {
@@ -71,15 +80,22 @@ function functionHandler({ logger, state }) {
       if (typeof targetValue === "function") {
         return function (...args) {
           let originalState = JSON.parse(JSON.stringify(target));
-          let result = pauseLogSet(() => targetValue.apply(this, args), state);
-          let newState = JSON.parse(JSON.stringify(target));
-          logger.mutation({
-            propKey,
-            args,
-            klass: target.constructor,
-            diff: getDiff(originalState, newState),
-          });
-          return result;
+          let error;
+          try {
+            return pauseLogSet(() => targetValue.apply(this, args), state);
+          } catch (err) {
+            error = err;
+            throw err;
+          } finally {
+            let newState = JSON.parse(JSON.stringify(target));
+            logger.mutation({
+              propKey,
+              args,
+              ...(error && { error }),
+              klass: target.constructor,
+              diff: getDiff(originalState, newState),
+            });
+          }
         };
       } else {
         return targetValue;
