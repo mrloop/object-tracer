@@ -6,6 +6,7 @@ module.exports = {
   },
   extends: [
     "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
     "plugin:qunit/recommended",
     "plugin:import/recommended",
     "plugin:prettier/recommended",
@@ -15,7 +16,8 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  plugins: ["prettier", "eslint-plugin-import-helpers"],
+  parser: "@typescript-eslint/parser",
+  plugins: ["@typescript-eslint", "prettier", "eslint-plugin-import-helpers"],
   rules: {
     "import-helpers/order-imports": [
       "warn",

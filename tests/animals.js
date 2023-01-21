@@ -1,12 +1,20 @@
 export class Animal {
-  sleep() {}
+  sleep() {
+    /* noop */
+  }
+
+  static relationships() {
+    return [];
+  }
 }
 
 export class Dog extends Animal {
   totalBarks = 0;
   hasError = false;
 
-  sleep() {}
+  sleep() {
+    /* noop */
+  }
 
   bark() {
     this.totalBarks++;
