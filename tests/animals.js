@@ -17,6 +17,10 @@ export class Dog extends Animal {
     this.hasError = true;
     throw error;
   }
+
+  static relationships() {
+    return ["owner"];
+  }
 }
 
 export class DogError extends Error {}

@@ -11,6 +11,7 @@ function callHandler({ logger }) {
   return {
     get(target, propKey, receiver) {
       const targetValue = Reflect.get(target, propKey, receiver);
+      if (propKey === "constructor") return targetValue; // TODO should we log static methods?
       if (typeof targetValue === "function") {
         return function (...args) {
           let error;
@@ -82,6 +83,7 @@ function functionHandler({ logger, state }) {
   return {
     get(target, propKey, receiver) {
       const targetValue = Reflect.get(target, propKey, receiver);
+      if (propKey === "constructor") return targetValue;
       if (typeof targetValue === "function") {
         return function (...args) {
           let originalState = copy(receiver);

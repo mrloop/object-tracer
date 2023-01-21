@@ -34,6 +34,11 @@ module("printMutations", function () {
         },
       ]);
     });
+
+    test("handles calls to constructor", function (assert) {
+      this.dog.constructor.relationships();
+      assert.deepEqual(this.logger.calls, []);
+    });
   });
 
   module("individual instances", function (hooks) {
