@@ -2,16 +2,16 @@ import QUnit from "qunit";
 
 import Logger from "../src/logger.js";
 
-let { module, test } = QUnit;
+const { module, test } = QUnit;
 
 class TestConsole {
-  logs = [];
+  logs: string[] = [];
 
-  log(str) {
+  log(str: string) {
     this.logs.push(str);
   }
 
-  getLines(index) {
+  getLines(index: number) {
     return this.logs[index].split("\n").map((s) => s.trim());
   }
 }
@@ -21,7 +21,8 @@ module("Logger", function () {
     class A {}
     class B extends A {}
     class C extends B {}
-    let logger = new Logger();
+    const console = new TestConsole();
+    const logger = new Logger((msg) => console.log(msg));
     assert.deepEqual(logger.prototypeChain(C), [A, B, C]);
   });
 
@@ -29,7 +30,8 @@ module("Logger", function () {
     class A {}
     class B extends A {}
     class C extends B {}
-    let logger = new Logger();
+    const console = new TestConsole();
+    const logger = new Logger((msg) => console.log(msg));
     assert.deepEqual(
       logger.prototypeChain(C).reduce(logger.protoReducer, ""),
       "A > B > C"
@@ -37,11 +39,17 @@ module("Logger", function () {
   });
 
   module("log calls", function (hooks) {
-    hooks.beforeEach(function () {
+    type TestContext = {
+      testConsole: TestConsole;
+      logger: Logger;
+    };
+
+    hooks.beforeEach(function (this: TestContext) {
       this.testConsole = new TestConsole();
       this.logger = new Logger((msg) => this.testConsole.log(msg));
     });
-    test("call", function (assert) {
+
+    test("call", function (this: TestContext, assert) {
       this.logger.call({
         args: [],
         propKey: "bark",
@@ -49,16 +57,16 @@ module("Logger", function () {
         result: "yap!",
       });
       assert.strictEqual(this.testConsole.logs.length, 1);
-      let lines = this.testConsole.getLines(0);
+      const lines = this.testConsole.getLines(0);
       assert.strictEqual(lines[0], ":bark #Deer");
       assert.true(/^from: at runTest/.test(lines[1]), lines[1]);
       assert.strictEqual(lines[2], "<=:");
       assert.strictEqual(lines[3], "=>: yap!");
     });
 
-    test("mutation", function (assert) {
+    test("mutation", function (this: TestContext, assert) {
       this.logger.mutation({
-        args: "frank",
+        args: ["frank"],
         propKey: "name",
         klass: class Hat {},
         diff: {
@@ -68,10 +76,10 @@ module("Logger", function () {
         },
       });
       assert.strictEqual(this.testConsole.logs.length, 1);
-      let lines = this.testConsole.getLines(0);
+      const lines = this.testConsole.getLines(0);
       assert.strictEqual(lines[0], ":name #Hat");
       assert.true(/^from: at runTest/.test(lines[1]), lines[1]);
-      assert.strictEqual(lines[2], "<=: frank");
+      assert.strictEqual(lines[2], '<=: "frank"');
       assert.strictEqual(lines[3], "changes:");
       assert.strictEqual(lines[4], "@name: fank => frank");
     });

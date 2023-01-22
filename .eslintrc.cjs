@@ -11,7 +11,15 @@ module.exports = {
     "plugin:import/recommended",
     "plugin:prettier/recommended",
   ],
-  overrides: [],
+  overrides: [
+    {
+      files: ["tests/**/*.ts"],
+      rules: {
+        "@typescript-eslint/ban-ts-comment": "off",
+      },
+    },
+  ],
+  ignorePatterns: ["dist/**/*"],
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
@@ -27,5 +35,8 @@ module.exports = {
         alphabetize: { order: "asc", ignoreCase: true },
       },
     ],
+    "@typescript-eslint/no-explicit-any": "warn",
+    "import/no-unresolved": "off",
   },
+  root: true,
 };

@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "esModuleInterop": true,
+    "module": "ES2020",
+    "moduleResolution": "nodenext",
+    "outDir": "dist",
+    "strict": true,
+    "target": "ESNEXT"
+  }
+}

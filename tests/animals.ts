@@ -1,9 +1,10 @@
 export class Animal {
-  sleep() {
+  sleep(t?: number) {
+    t;
     /* noop */
   }
 
-  static relationships() {
+  static relationships(): string[] {
     return [];
   }
 }
@@ -11,17 +12,14 @@ export class Animal {
 export class Dog extends Animal {
   totalBarks = 0;
   hasError = false;
-
-  sleep() {
-    /* noop */
-  }
+  friends: Dog[] = [];
 
   bark() {
     this.totalBarks++;
     return "yap!";
   }
 
-  error(error) {
+  error(error: Error) {
     this.hasError = true;
     throw error;
   }
