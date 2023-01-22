@@ -1,3 +1,5 @@
+import safeJsonValue from "safe-json-value";
+
 export type Class = { new (...args: any[]): any };
 
 export default class Logger {
@@ -49,7 +51,7 @@ export default class Logger {
   changes:\n${this.diffToString(diff)}`);
   }
 
-  private diffToString(diff: object) {
+  diffToString(diff: object) {
     return Object.values(diff)
       .reduce((arr, typeOfMutationArray) => {
         return typeOfMutationArray.reduce(
@@ -72,7 +74,7 @@ export default class Logger {
 
   _format(value?: string | object) {
     if (value === undefined || value === null) return value;
-    return JSON.stringify(value).slice(1, -1);
+    return JSON.stringify(safeJsonValue(value).value).slice(1, -1);
   }
 
   protoReducer(str: string, klass: Class) {

@@ -5,7 +5,9 @@
     "module": "ES2020",
     "moduleResolution": "nodenext",
     "outDir": "dist",
+    "rootDir": "src",
     "strict": true,
     "target": "ESNEXT"
-  }
+  },
+  "include": ["src/**/*"]
 }

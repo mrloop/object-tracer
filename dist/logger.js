@@ -1,3 +1,4 @@
+import safeJsonValue from "safe-json-value";
 export default class Logger {
     log;
     constructor(log) {
@@ -31,7 +32,7 @@ export default class Logger {
     _format(value) {
         if (value === undefined || value === null)
             return value;
-        return JSON.stringify(value).slice(1, -1);
+        return JSON.stringify(safeJsonValue(value).value).slice(1, -1);
     }
     protoReducer(str, klass) {
         if (str === "")
