@@ -1,7 +1,8 @@
 import { getDiff } from "json-difference";
 
-import { copy, pauseLog, shouldLog, PublicPrintOptions } from "./functions.js";
 import Logger, { Class } from "./logger.js";
+import { PublicPrintOptions } from "./print.js";
+import Trace from "./trace.js";
 
 type State = {
   shouldLogSet: boolean;
@@ -11,9 +12,9 @@ function setHandler({ logger, state }: { logger: Logger; state?: State }) {
   return {
     set(target: any, propKey: string, value: any, receiver: any) {
       if (state?.shouldLogSet) {
-        const originalState = copy(receiver);
+        const originalState = Trace.copy(receiver);
         const result = Reflect.set(target, propKey, value, receiver);
-        const newState = copy(receiver);
+        const newState = Trace.copy(receiver);
         logger.mutation({
           propKey,
           args: value,
@@ -38,12 +39,12 @@ function functionHandler({ logger, state }: { logger: Logger; state: State }) {
     get(target: any, propKey: string, receiver: any) {
       const targetValue = Reflect.get(target, propKey, receiver);
       if (
-        shouldLog &&
+        !Trace.isPaused &&
         propKey !== "constructor" &&
         typeof targetValue === "function"
       ) {
         return function (this: any, ...args: any[]) {
-          const originalState = copy(receiver);
+          const originalState = Trace.copy(receiver);
           let error: any;
           try {
             return pauseLogSet(() => targetValue.apply(this, args), state);
@@ -51,8 +52,8 @@ function functionHandler({ logger, state }: { logger: Logger; state: State }) {
             error = err;
             throw err;
           } finally {
-            const newState = copy(receiver);
-            pauseLog(() =>
+            const newState = Trace.copy(receiver);
+            Trace.pause(() =>
               logger.mutation({
                 propKey,
                 args,

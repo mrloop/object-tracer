@@ -1,12 +1,13 @@
-import { pauseLog, shouldLog, PublicPrintOptions } from "./functions.js";
 import Logger, { Class } from "./logger.js";
+import { PublicPrintOptions } from "./print.js";
+import Trace from "./trace.js";
 
 function callHandler({ logger }: { logger: Logger }) {
   return {
     get(target: any, propKey: string, receiver: any) {
       const targetValue = Reflect.get(target, propKey, receiver);
       if (
-        shouldLog &&
+        !Trace.isPaused &&
         propKey !== "constructor" &&
         typeof targetValue === "function"
       ) {
@@ -20,7 +21,7 @@ function callHandler({ logger }: { logger: Logger }) {
             error = err;
             throw err;
           } finally {
-            pauseLog(() =>
+            Trace.pause(() =>
               logger.call({
                 propKey,
                 args,
