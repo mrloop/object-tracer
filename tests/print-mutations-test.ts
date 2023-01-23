@@ -14,7 +14,7 @@ type TestContext = {
   dog: Dog;
 };
 
-module("printMutations", function () {
+module("Unit | printMutations", function () {
   module("all class instances", function (hooks) {
     hooks.beforeEach(function (this: TestContext) {
       this.logger = new TestLogger();

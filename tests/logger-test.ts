@@ -16,7 +16,7 @@ class TestConsole {
   }
 }
 
-module("Logger", function () {
+module("Unit | Logger", function () {
   test("prototypeChain", function (assert) {
     class A {}
     class B extends A {}

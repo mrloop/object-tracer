@@ -11,19 +11,35 @@ type PublicPrintOptions = {
   logger?: Logger;
 };
 
+let shouldLog = true;
+
+/* Don't log function calls made when logging */
+function pauseLog(fnc: () => any) {
+  const original = shouldLog;
+  try {
+    shouldLog = false;
+    return fnc();
+  } finally {
+    shouldLog = original;
+  }
+}
+
 function copy(obj: object): object {
-  return safeJsonValue(obj).value || {};
+  return pauseLog(() => safeJsonValue(obj).value || {});
 }
 
 function callHandler({ logger }: { logger: Logger }) {
   return {
     get(target: any, propKey: string, receiver: any) {
       const targetValue = Reflect.get(target, propKey, receiver);
-      if (propKey === "constructor") return targetValue; // TODO should we log static methods?
-      if (typeof targetValue === "function") {
+      if (
+        shouldLog &&
+        propKey !== "constructor" &&
+        typeof targetValue === "function"
+      ) {
         return function (this: any, ...args: any[]) {
-          let error;
-          let result;
+          let error: any;
+          let result: any;
           try {
             result = targetValue.apply(this, args);
             return result;
@@ -31,13 +47,15 @@ function callHandler({ logger }: { logger: Logger }) {
             error = err;
             throw err;
           } finally {
-            logger.call({
-              propKey,
-              args,
-              klass: target.constructor as Class,
-              ...(!!error && { error }),
-              ...(!error && { result }),
-            });
+            pauseLog(() =>
+              logger.call({
+                propKey,
+                args,
+                klass: target.constructor as Class,
+                ...(!!error && { error }),
+                ...(!error && { result }),
+              })
+            );
           }
         };
       } else {
@@ -97,11 +115,14 @@ function functionHandler({ logger, state }: { logger: Logger; state: State }) {
   return {
     get(target: any, propKey: string, receiver: any) {
       const targetValue = Reflect.get(target, propKey, receiver);
-      if (propKey === "constructor") return targetValue;
-      if (typeof targetValue === "function") {
+      if (
+        shouldLog &&
+        propKey !== "constructor" &&
+        typeof targetValue === "function"
+      ) {
         return function (this: any, ...args: any[]) {
           const originalState = copy(receiver);
-          let error;
+          let error: any;
           try {
             return pauseLogSet(() => targetValue.apply(this, args), state);
           } catch (err) {
@@ -109,13 +130,15 @@ function functionHandler({ logger, state }: { logger: Logger; state: State }) {
             throw err;
           } finally {
             const newState = copy(receiver);
-            logger.mutation({
-              propKey,
-              args,
-              ...(!!error && { error }),
-              klass: target.constructor,
-              diff: getDiff(originalState, newState),
-            });
+            pauseLog(() =>
+              logger.mutation({
+                propKey,
+                args,
+                ...(!!error && { error }),
+                klass: target.constructor,
+                diff: getDiff(originalState, newState),
+              })
+            );
           }
         };
       } else {
@@ -125,6 +148,7 @@ function functionHandler({ logger, state }: { logger: Logger; state: State }) {
   };
 }
 
+/* Don't log a `set` triggered by a `get` */
 function pauseLogSet(fnc: () => any, state: State) {
   const original = state.shouldLogSet;
   try {

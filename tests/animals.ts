@@ -1,8 +1,16 @@
 export class Animal {
+  name = "";
+
+  addFriend(friend: Animal) {
+    this.friends.push(friend);
+  }
+
   sleep(t?: number) {
     t;
     /* noop */
   }
+
+  friends: Animal[] = [];
 
   static relationships(): string[] {
     return [];
@@ -12,7 +20,6 @@ export class Animal {
 export class Dog extends Animal {
   totalBarks = 0;
   hasError = false;
-  friends: Dog[] = [];
 
   bark() {
     this.totalBarks++;
@@ -26,6 +33,21 @@ export class Dog extends Animal {
 
   static relationships() {
     return ["owner"];
+  }
+}
+
+export class Cat extends Animal {
+  totalMeows = 0;
+
+  meow() {
+    this.totalMeows++;
+    return "meyho";
+  }
+
+  toJSON() {
+    return {
+      totalMeows: this.totalMeows,
+    };
   }
 }
 
