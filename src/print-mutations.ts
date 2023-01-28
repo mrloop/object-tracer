@@ -30,7 +30,7 @@ function setHandler({ logger, state }: { logger: Logger; state?: State }) {
 }
 
 export function printSets(object: object, { logger }: PublicPrintOptions = {}) {
-  logger = logger ?? new Logger(console.log);
+  logger = logger ?? new Logger([console]);
   return new Proxy(object, setHandler({ logger }));
 }
 
@@ -86,7 +86,7 @@ export function printMutations(
   object: object,
   { logger }: PublicPrintOptions = {}
 ) {
-  logger = logger ?? new Logger(console.log);
+  logger = logger ?? new Logger([console]);
   const state = { shouldLogSet: true };
   return new Proxy(object, {
     ...functionHandler({ logger, state }),
@@ -98,7 +98,7 @@ export function printInstanceMutations(
   klass: Class,
   { logger }: PublicPrintOptions = {}
 ) {
-  logger = logger ?? new Logger(console.log);
+  logger = logger ?? new Logger([console]);
   return new Proxy(klass, {
     construct(target, args) {
       return printMutations(new target(...args), { logger });

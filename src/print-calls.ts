@@ -43,7 +43,7 @@ export function printCalls(
   object: object,
   { logger }: PublicPrintOptions = {}
 ) {
-  logger = logger ?? new Logger(console.log);
+  logger = logger ?? new Logger([console]);
   return new Proxy(object, callHandler({ logger }));
 }
 
@@ -51,7 +51,7 @@ export function printInstanceCalls(
   klass: Class,
   { logger }: PublicPrintOptions = {}
 ) {
-  logger = logger ?? new Logger(console.log);
+  logger = logger ?? new Logger([console]);
   return new Proxy(klass, {
     construct(target, args) {
       return printCalls(new target(...args), { logger });

@@ -8,9 +8,13 @@ class TestLogger extends Logger {
   logs: string[] = [];
 
   constructor() {
-    super((msg: string) => {
-      this.logs.push(msg);
-    });
+    super([
+      {
+        log: (msg: string) => {
+          this.logs.push(msg);
+        },
+      },
+    ]);
   }
 }
 

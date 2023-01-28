@@ -4,9 +4,13 @@ export default class TestLogger extends Logger {
   calls: { [key: string]: any }[] = [];
 
   constructor() {
-    super(() => {
-      /**/
-    });
+    super([
+      {
+        log: () => {
+          /**/
+        },
+      },
+    ]);
   }
 
   set(arg: any) {

@@ -22,7 +22,7 @@ module("Unit | Logger", function () {
     class B extends A {}
     class C extends B {}
     const console = new TestConsole();
-    const logger = new Logger((msg) => console.log(msg));
+    const logger = new Logger([console]);
     assert.deepEqual(logger.prototypeChain(C), [A, B, C]);
   });
 
@@ -31,7 +31,7 @@ module("Unit | Logger", function () {
     class B extends A {}
     class C extends B {}
     const console = new TestConsole();
-    const logger = new Logger((msg) => console.log(msg));
+    const logger = new Logger([console]);
     assert.deepEqual(
       logger.prototypeChain(C).reduce(logger.protoReducer, ""),
       "A > B > C"
@@ -46,7 +46,7 @@ module("Unit | Logger", function () {
 
     hooks.beforeEach(function (this: TestContext) {
       this.testConsole = new TestConsole();
-      this.logger = new Logger((msg) => this.testConsole.log(msg));
+      this.logger = new Logger([this.testConsole]);
     });
 
     test("call", function (this: TestContext, assert) {
