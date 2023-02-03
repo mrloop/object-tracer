@@ -1,5 +1,9 @@
 import safeJsonValue from "safe-json-value";
 
+interface CopyObject extends Object {
+  serialize?: () => object;
+}
+
 export default class Trace {
   private static _isPaused = false;
 
@@ -8,7 +12,7 @@ export default class Trace {
   }
 
   /* Don't log function calls made when logging */
-  static pause(fnc: () => any) {
+  static pause<T>(fnc: () => T): T {
     const original = this._isPaused;
     try {
       this._isPaused = true;
@@ -18,7 +22,11 @@ export default class Trace {
     }
   }
 
-  static copy(obj: object): object {
-    return this.pause(() => safeJsonValue(obj).value || {});
+  static copy(obj: CopyObject): object {
+    return this.pause(() => {
+      // TODO serialize is emberjs only
+      // inject serialize and other framework specific methods
+      return safeJsonValue(obj).value || obj.serialize?.() || {};
+    });
   }
 }
