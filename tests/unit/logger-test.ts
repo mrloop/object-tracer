@@ -14,6 +14,12 @@ class TestConsole {
   getLines(index: number) {
     return this.logs[index].split("\n").map((s) => s.trim());
   }
+
+  getOutputLines(index: number) {
+    const lines = this.getLines(index);
+    const startOutputIndex = lines.findIndex((v) => /=>:/.test(v));
+    return lines.slice(startOutputIndex);
+  }
 }
 
 module("Unit | Logger", function () {
@@ -46,42 +52,64 @@ module("Unit | Logger", function () {
 
     hooks.beforeEach(function (this: TestContext) {
       this.testConsole = new TestConsole();
-      this.logger = new Logger([this.testConsole]);
     });
 
-    test("call", function (this: TestContext, assert) {
-      this.logger.call({
-        args: [],
-        propKey: "bark",
-        klass: class Deer {},
-        result: "yap!",
+    module("call function", function () {
+      test("it works", function (this: TestContext, assert) {
+        const logger = new Logger([this.testConsole]);
+        logger.call({
+          args: [],
+          propKey: "bark",
+          klass: class Deer {},
+          result: "yap!",
+        });
+        assert.strictEqual(this.testConsole.logs.length, 1);
+        const lines = this.testConsole.getLines(0);
+        assert.strictEqual(lines[0], ":bark #Deer");
+        assert.true(/^from: at runTest/.test(lines[1]), lines[1]);
+        assert.strictEqual(lines[2], "<=:");
+        assert.strictEqual(lines[3], '=>: "yap!"');
       });
-      assert.strictEqual(this.testConsole.logs.length, 1);
-      const lines = this.testConsole.getLines(0);
-      assert.strictEqual(lines[0], ":bark #Deer");
-      assert.true(/^from: at runTest/.test(lines[1]), lines[1]);
-      assert.strictEqual(lines[2], "<=:");
-      assert.strictEqual(lines[3], "=>: yap!");
+
+      test("excludes string is excludes key from changes output", function (this: TestContext, assert) {
+        const logger = new Logger([this.testConsole], ["store"]);
+        logger.call({
+          args: [],
+          propKey: "bark",
+          klass: class Deer {},
+          result: {
+            store: "not-included",
+            noise: "yap!",
+          },
+        });
+        assert.strictEqual(
+          this.testConsole.getOutputLines(0).join(" "),
+          '=>: { "noise": "yap!" }'
+        );
+      });
     });
 
-    test("mutation", function (this: TestContext, assert) {
-      this.logger.mutation({
-        args: ["frank"],
-        propKey: "name",
-        klass: class Hat {},
-        diff: {
-          added: [],
-          removed: [],
-          edited: [["name", "fank", "frank"]],
-        },
+    module("mutation function", function () {
+      test("it works", function (this: TestContext, assert) {
+        const logger = new Logger([this.testConsole]);
+        logger.mutation({
+          args: ["frank"],
+          propKey: "name",
+          klass: class Hat {},
+          diff: {
+            added: [],
+            removed: [],
+            edited: [["name", "fank", "frank"]],
+          },
+        });
+        assert.strictEqual(this.testConsole.logs.length, 1);
+        const lines = this.testConsole.getLines(0);
+        assert.strictEqual(lines[0], ":name #Hat");
+        assert.true(/^from: at runTest/.test(lines[1]), lines[1]);
+        assert.strictEqual(lines[2], '<=: "frank"');
+        assert.strictEqual(lines[3], "changes:");
+        assert.strictEqual(lines[4], "@name: fank => frank");
       });
-      assert.strictEqual(this.testConsole.logs.length, 1);
-      const lines = this.testConsole.getLines(0);
-      assert.strictEqual(lines[0], ":name #Hat");
-      assert.true(/^from: at runTest/.test(lines[1]), lines[1]);
-      assert.strictEqual(lines[2], '<=: "frank"');
-      assert.strictEqual(lines[3], "changes:");
-      assert.strictEqual(lines[4], "@name: fank => frank");
     });
   });
 });

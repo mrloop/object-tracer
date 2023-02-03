@@ -6,10 +6,10 @@ export interface Output {
   log: (msg: string) => void;
 }
 
+type Exclude = string | RegExp;
+
 export default class Logger {
-  constructor(
-    private outputs: Output[],
-  ) {}
+  constructor(private outputs: Output[], private excludes: Exclude[] = []) {}
 
   private log(msg: string) {
     this.outputs.forEach((output) => {
@@ -35,8 +35,8 @@ export default class Logger {
       ""
     )}
   from: ${this._line()}
-  <=: ${this._format(args)}
-  =>: ${this._format(result)}`);
+  <=: ${this.format(args)}
+  =>: ${this.format(result, this.excludes)}`);
   }
 
   mutation({
@@ -55,7 +55,7 @@ export default class Logger {
       ""
     )}
   from: ${this._line()}
-  <=: ${this._format(args)}
+  <=: ${this.format(args)}
   changes:\n${this.diffToString(diff)}`);
   }
 
@@ -80,9 +80,31 @@ export default class Logger {
     return new Error().stack?.split("\n")[4].trim();
   }
 
-  _format(value?: string | object) {
+  private format(value?: string | object, excludes: Exclude[] = []) {
     if (value === undefined || value === null) return value;
-    return JSON.stringify(safeJsonValue(value).value).slice(1, -1);
+    let result = JSON.stringify(
+      safeJsonValue(value).value,
+      this.replacer(excludes),
+      2
+    );
+    if (value instanceof Array) {
+      result = result?.slice(1, -1);
+    }
+    return result?.trim();
+  }
+
+  private replacer(excludes: Exclude[]) {
+    return function replacerFn(key: string, value: any) {
+      if (
+        excludes.some(
+          (exclude) =>
+            (exclude instanceof RegExp && exclude.test(key)) || exclude === key
+        )
+      ) {
+        return undefined;
+      }
+      return value;
+    };
   }
 
   protoReducer(str: string, klass: Class) {

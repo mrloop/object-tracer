@@ -42,13 +42,13 @@ function callHandler({ logger }: { logger: Logger }) {
 
 export function printCalls(
   object: object,
-  { logger, saveOnUnload }: PublicPrintOptions = {}
+  { excludes, logger, saveOnUnload }: PublicPrintOptions = {}
 ) {
   const outputs: Output[] = [console];
   if (saveOnUnload) {
     outputs.push(new ToFileOnUnloadOutput());
   }
-  logger = logger ?? new Logger(outputs);
+  logger = logger ?? new Logger(outputs, excludes);
   return new Proxy(object, callHandler({ logger }));
 }
 

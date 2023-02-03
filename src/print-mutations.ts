@@ -85,13 +85,13 @@ function pauseLogSet(fnc: () => any, state: State) {
 
 export function printMutations(
   object: object,
-  { logger, saveOnUnload }: PublicPrintOptions = {}
+  { excludes, logger, saveOnUnload }: PublicPrintOptions = {}
 ) {
   const outputs: Output[] = [console];
   if (saveOnUnload) {
     outputs.push(new ToFileOnUnloadOutput());
   }
-  logger = logger ?? new Logger(outputs);
+  logger = logger ?? new Logger(outputs, excludes);
   const state = { shouldLogSet: true };
   return new Proxy(object, {
     ...functionHandler({ logger, state }),
