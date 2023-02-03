@@ -2,12 +2,14 @@ import safeJsonValue from "safe-json-value";
 
 export type Class = { new (...args: any[]): any };
 
-interface Output {
+export interface Output {
   log: (msg: string) => void;
 }
 
 export default class Logger {
-  constructor(private outputs: Output[]) {}
+  constructor(
+    private outputs: Output[],
+  ) {}
 
   private log(msg: string) {
     this.outputs.forEach((output) => {

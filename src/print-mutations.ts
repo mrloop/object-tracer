@@ -1,7 +1,8 @@
 import { getDiff } from "json-difference";
 
-import Logger, { Class } from "./logger.js";
+import Logger, { Class, Output } from "./logger.js";
 import { PublicPrintOptions } from "./print.js";
+import ToFileOnUnloadOutput from "./to-file-on-unload-output.js";
 import Trace from "./trace.js";
 
 type State = {
@@ -84,9 +85,13 @@ function pauseLogSet(fnc: () => any, state: State) {
 
 export function printMutations(
   object: object,
-  { logger }: PublicPrintOptions = {}
+  { logger, saveOnUnload }: PublicPrintOptions = {}
 ) {
-  logger = logger ?? new Logger([console]);
+  const outputs: Output[] = [console];
+  if (saveOnUnload) {
+    outputs.push(new ToFileOnUnloadOutput());
+  }
+  logger = logger ?? new Logger(outputs);
   const state = { shouldLogSet: true };
   return new Proxy(object, {
     ...functionHandler({ logger, state }),
@@ -96,12 +101,11 @@ export function printMutations(
 
 export function printInstanceMutations(
   klass: Class,
-  { logger }: PublicPrintOptions = {}
+  options: PublicPrintOptions = {}
 ) {
-  logger = logger ?? new Logger([console]);
   return new Proxy(klass, {
     construct(target, args) {
-      return printMutations(new target(...args), { logger });
+      return printMutations(new target(...args), options);
     },
   });
 }

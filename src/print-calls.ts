@@ -1,5 +1,6 @@
-import Logger, { Class } from "./logger.js";
+import Logger, { Class, Output } from "./logger.js";
 import { PublicPrintOptions } from "./print.js";
+import ToFileOnUnloadOutput from "./to-file-on-unload-output.js";
 import Trace from "./trace.js";
 
 function callHandler({ logger }: { logger: Logger }) {
@@ -41,20 +42,23 @@ function callHandler({ logger }: { logger: Logger }) {
 
 export function printCalls(
   object: object,
-  { logger }: PublicPrintOptions = {}
+  { logger, saveOnUnload }: PublicPrintOptions = {}
 ) {
-  logger = logger ?? new Logger([console]);
+  const outputs: Output[] = [console];
+  if (saveOnUnload) {
+    outputs.push(new ToFileOnUnloadOutput());
+  }
+  logger = logger ?? new Logger(outputs);
   return new Proxy(object, callHandler({ logger }));
 }
 
 export function printInstanceCalls(
   klass: Class,
-  { logger }: PublicPrintOptions = {}
+  options: PublicPrintOptions = {}
 ) {
-  logger = logger ?? new Logger([console]);
   return new Proxy(klass, {
     construct(target, args) {
-      return printCalls(new target(...args), { logger });
+      return printCalls(new target(...args), options);
     },
   });
 }
