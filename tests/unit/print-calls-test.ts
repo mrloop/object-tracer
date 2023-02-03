@@ -1,8 +1,8 @@
 import QUnit from "qunit";
 
-import { printCalls, printInstanceCalls } from "../src/index.js";
-import { Class } from "../src/logger.js";
-import { Dog, DogError } from "./animals.js";
+import { printCalls, printInstanceCalls } from "../../src/index.js";
+import { Class } from "../../src/logger.js";
+import { Dog, DogError } from "../animals.js";
 import TestLogger from "./test-logger.js";
 
 const { module, test } = QUnit;

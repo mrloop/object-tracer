@@ -1,8 +1,8 @@
 import QUnit from "qunit";
 
-import { printInstanceCalls } from "../src/index.js";
-import Logger, { Class } from "../src/logger.js";
-import { Cat } from "./animals.js";
+import { printInstanceCalls } from "../../src/index.js";
+import Logger, { Class } from "../../src/logger.js";
+import { Cat } from "../animals.js";
 
 class TestLogger extends Logger {
   logs: string[] = [];

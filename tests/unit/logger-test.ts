@@ -1,6 +1,6 @@
 import QUnit from "qunit";
 
-import Logger from "../src/logger.js";
+import Logger from "../../src/logger.js";
 
 const { module, test } = QUnit;
 

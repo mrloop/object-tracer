@@ -1,4 +1,4 @@
-import Logger from "../src/logger.js";
+import Logger from "../../src/logger.js";
 
 export default class TestLogger extends Logger {
   calls: { [key: string]: any }[] = [];
