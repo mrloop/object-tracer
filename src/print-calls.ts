@@ -1,3 +1,4 @@
+import isConstructor from "./is-constructor.js";
 import Logger, { Class, Output } from "./logger.js";
 import { PublicPrintOptions } from "./print.js";
 import ToFileOnUnloadOutput from "./to-file-on-unload-output.js";
@@ -10,7 +11,8 @@ function callHandler({ logger }: { logger: Logger }) {
       if (
         !Trace.isPaused &&
         propKey !== "constructor" &&
-        typeof targetValue === "function"
+        typeof targetValue === "function" &&
+        !isConstructor(targetValue)
       ) {
         return function (this: any, ...args: any[]) {
           let error: any;
