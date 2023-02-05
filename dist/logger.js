@@ -1,19 +1,26 @@
 import safeJsonValue from "safe-json-value";
 export default class Logger {
-    log;
-    constructor(log) {
-        this.log = log;
+    outputs;
+    excludes;
+    constructor(outputs, excludes = []) {
+        this.outputs = outputs;
+        this.excludes = excludes;
+    }
+    log(msg) {
+        this.outputs.forEach((output) => {
+            output.log(msg);
+        });
     }
     call({ propKey, klass, args, result, error, }) {
         this.log(`:${propKey} #${this.prototypeChain(klass).reduce(this.protoReducer, "")}
   from: ${this._line()}
-  <=: ${this._format(args)}
-  =>: ${this._format(result)}`);
+  <=: ${this.format(args)}
+  =>: ${this.format(result, this.excludes)}`);
     }
     mutation({ propKey, args, klass, diff, }) {
         this.log(`:${propKey} #${this.prototypeChain(klass).reduce(this.protoReducer, "")}
   from: ${this._line()}
-  <=: ${this._format(args)}
+  <=: ${this.format(args)}
   changes:\n${this.diffToString(diff)}`);
     }
     diffToString(diff) {
@@ -29,10 +36,22 @@ export default class Logger {
     _line() {
         return new Error().stack?.split("\n")[4].trim();
     }
-    _format(value) {
+    format(value, excludes = []) {
         if (value === undefined || value === null)
             return value;
-        return JSON.stringify(safeJsonValue(value).value).slice(1, -1);
+        let result = JSON.stringify(safeJsonValue(value).value, this.replacer(excludes), 2);
+        if (value instanceof Array) {
+            result = result?.slice(1, -1);
+        }
+        return result?.trim();
+    }
+    replacer(excludes) {
+        return function replacerFn(key, value) {
+            if (excludes.some((exclude) => (exclude instanceof RegExp && exclude.test(key)) || exclude === key)) {
+                return undefined;
+            }
+            return value;
+        };
     }
     protoReducer(str, klass) {
         if (str === "")
