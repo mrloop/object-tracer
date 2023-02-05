@@ -1,5 +1,7 @@
 # object-tracer
 
+**A work in progress**
+
 `object-tracer` allows you to listen to different events on an object:
 * `Method Calls` - what does the object do
 * `Traces` - TODO - how the object is used by the application
